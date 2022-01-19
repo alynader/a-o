@@ -1,51 +1,33 @@
-const express = require('express');
-const connectDB = require('./config/db');
-var cors = require('cors');
+require("dotenv").config();
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+//process.env.URI = " mongodb+srv://alynader20:412000AnM@cluster0.ccxio.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
+const flightRouter = require("./routes/flightRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
+const userRouter = require("./routes/userRoutes");
 
-// add admin
-// app.get("/CreateUser", (req, res) => {
-//      let newUser = new User({
-//        Name : "Romero",
-//        Admin:true,
-//        Email : "Romero@student.guc.edu.eg",
-//        Age : 21,
-//        LivesIn : "Italy",
-//        MartialStatus : "Single",
-//        PhoneNumber : "01123477228",
-//        Job : "Admin"
-//    })
-//    newUser.save()
-//    .then((doc)=> {
-//      res.send(doc);
-//      console.log('admin added');
-//    })
-//    .catch(err=>{
-//      console.error(err)
-//    });
-//  });
-   
+const User = require("./model/user.js");
 
-// routes
-const flights = require('./routes/api/flights');
-const users = require('./routes/api/Users');
+const dbPath = process.env.URI;
+
+mongoose
+  .connect(dbPath)
+  .then((result) => console.log("connected to DB"))
+  .catch((err) => console.log(err));
 
 const app = express();
 
-// Connect Database
-connectDB();
 
-// cors
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({extended: false}));
 
-// Init Middleware
-app.use(express.json({ extended: false }));
 
-app.get('/', (req, res) => res.send('Hello world!'));
+app.use("/payment/", paymentRoutes);
+app.use("/flights", flightRouter);
+app.use("/user", userRouter);
 
-// use Routes
-app.use('/api/flights', flights);
-app.use('/api/Users', users);
+app.listen(8000);
+console.log("Back-end Listening on port 8000");
 
-const port = process.env.PORT || 8082;
-
-app.listen(port, () => console.log(`Server running on port ${port}`));
